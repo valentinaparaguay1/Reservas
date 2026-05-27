@@ -978,21 +978,46 @@ function confirmar(){
     if(!chk){err.textContent='Debés confirmar que realizaste la transferencia.';err.style.display='block';return;}
 
     const btn=document.getElementById('btn-s');
-    btn.disabled=true; btn.textContent='Procesando...';
+    btn.disabled=true; btn.textContent='Enviando...';
 
-    const SHEET='TU_APPS_SCRIPT_URL';
-    const data={unidad:sel.u,tipo:sel.t,orientacion:sel.o,precio_lista:sel.l,nombre:n,email:e,tel:t,pais:p,ci:c,fecha:new Date().toLocaleString('es-PY')};
-    if(SHEET!=='TU_APPS_SCRIPT_URL'){
-        fetch(SHEET,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(()=>{});
-    }
+    const data = {
+        unidad: sel.u,
+        tipo: sel.t,
+        orientacion: sel.o,
+        nombre: n,
+        email: e,
+        whatsapp: t,
+        pais: p,
+        cedula: c,
+        fecha: new Date().toLocaleString('es-PY'),
+        _subject: '🏠 Nueva Reserva Torre 4 Duna — Unidad ' + sel.u
+    };
 
-    document.getElementById('msg-ok').innerHTML=`<strong>Reserva Confirmada</strong>Unidad ${sel.u} · ${sel.t}<br>Recibirás confirmación en <strong>${e}</strong><br>Nos ponemos en contacto a la brevedad.`;
-    document.getElementById('msg-ok').style.display='block';
-    btn.style.display='none';
+    fetch('https://formspree.io/f/mzdwyrbw', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if(res.ok || res.next) {
+            document.getElementById('msg-ok').innerHTML=`<strong>Reserva Confirmada</strong>Unidad ${sel.u} · ${sel.t}<br>Recibirás confirmación en <strong>${e}</strong><br>Nos ponemos en contacto a la brevedad.`;
+            document.getElementById('msg-ok').style.display='block';
+            btn.style.display='none';
+        } else {
+            err.textContent='Hubo un error. Escribinos por WhatsApp.';
+            err.style.display='block';
+            btn.disabled=false; btn.textContent='Confirmar Reserva';
+        }
+    })
+    .catch(()=>{
+        err.textContent='Error de conexión. Intentá de nuevo.';
+        err.style.display='block';
+        btn.disabled=false; btn.textContent='Confirmar Reserva';
+    });
 }
 
 render();
 </script>
 </body>
 </html>
-
